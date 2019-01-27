@@ -4,10 +4,12 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 from .minerva_common import *
+from .grades import *
 from . import shib_credentials
 
 import re
 
+"""
 import logging
 
 # These two lines enable debugging at httplib level (requests->urllib3->http.client)
@@ -21,12 +23,13 @@ except ImportError:
 http_client.HTTPConnection.debuglevel = 1
 
 # You must initialize logging, otherwise you'll not see debug output.
+
 logging.basicConfig()
 logging.getLogger().setLevel(logging.DEBUG)
 requests_log = logging.getLogger("requests.packages.urllib3")
 requests_log.setLevel(logging.DEBUG)
 requests_log.propagate = True
-
+"""
 
 def shibboleth_login():
     """ Ask myCourses for a shibboleth based login """
@@ -41,7 +44,6 @@ def shibboleth_login():
     shibboleth_login_page = minerva_parser(r2.text)
     shibboleth_login_url = shibboleth_login_page.find('form').attrs['action']
     login_req = {'j_username': shib_credentials.username, 'j_password': shib_credentials.password, '_eventId_proceed': 'Log in'}
-    print login_req, shibboleth_login_url
 
     # Do a request to log in
     r3 = minerva_post(shibboleth_login_url, login_req, base_url=shib_credentials.idp_url)
@@ -50,7 +52,6 @@ def shibboleth_login():
     param_relaystate = authz_form.find('input', {'name': 'RelayState'}).attrs['value']
     param_samlresponse = authz_form.find('input', {'name': 'SAMLResponse'}).attrs['value']
     authz_req = {'RelayState': param_relaystate, 'SAMLResponse': param_samlresponse}
-    print mycourses_callback, authz_req
     
     # Inform myCourses that we are now in
     r4 = minerva_post(mycourses_callback, authz_req, base_url='')
@@ -60,10 +61,10 @@ def shibboleth_login():
 
     # At this point, we're officially in. r5.text holds some html goop we can use, along with further authorization steps to see a list of courses
     # It is so much less painful to see info about particular courses if you know their code. As a POC, let's get some info from URBP201
-    class_code = "379926"
+    class_code = "349397"
     # This is the list of assignments
-    r6 = minerva_get("d2l/lms/dropbox/user/folders_list.d2l?ou=%s&isprv=0" % (class_code), base_url=shib_credentials.lms_url)
-    print r6.text
+    r6 = minerva_get("d2l/lms/grades/my_grades/main.d2l?ou=%s" % (class_code), base_url=shib_credentials.lms_url)
+    dump_grades(r6.text)
     
 
     
@@ -74,4 +75,5 @@ def shibboleth_dummy_post():
     """ We have to send this nonsense back to shibboleth to get the actual login form """
     return "shib_idp_ls_exception.shib_idp_session_ss=&shib_idp_ls_success.shib_idp_session_ss=false&shib_idp_ls_value.shib_idp_session_ss=&shib_idp_ls_exception.shib_idp_persistent_ss=&shib_idp_ls_success.shib_idp_persistent_ss=false&shib_idp_ls_value.shib_idp_persistent_ss=&shib_idp_ls_supported=&_eventId_proceed="
 
- 
+
+shibboleth_login() 
