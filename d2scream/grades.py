@@ -118,7 +118,7 @@ def dump_grades(f):
             elif grade.isdigit():
                 grade = float(grade)
             else:
-                grade = None
+                pass # Leave the unfiltered grade
 
             struct.grade = grade
 
