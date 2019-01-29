@@ -55,7 +55,6 @@ def minerva_post(func,req, base_url = shib_credentials.lms_url):
         sys.stderr.write("> " + func + "\n")
 
     global referer
-    print(cookie_data)
     url = base_url + func
     r = s.post(url,data = req,cookies = cookie_data,headers = {'Referer': referer, 'Content-Type': 'application/x-www-form-urlencoded'})
     referer = r.url

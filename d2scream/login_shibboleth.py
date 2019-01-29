@@ -7,6 +7,7 @@ from .minerva_common import *
 from .grades import *
 from . import shib_credentials
 
+import sys
 import re
 
 """
@@ -61,10 +62,10 @@ def shibboleth_login():
 
     # At this point, we're officially in. r5.text holds some html goop we can use, along with further authorization steps to see a list of courses
     # It is so much less painful to see info about particular courses if you know their code. As a POC, let's get some info from URBP201
-    class_code = "349397"
+    class_code = sys.argv[1] 
     # This is the list of assignments
     r6 = minerva_get("d2l/lms/grades/my_grades/main.d2l?ou=%s" % (class_code), base_url=shib_credentials.lms_url)
-    dump_grades(r6.text)
+    print as_json(dump_grades(r6.text))
     
 
     
