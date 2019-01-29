@@ -42,7 +42,7 @@ def minerva_get(func, base_url = shib_credentials.lms_url):
 
     global referer
     url = base_url + func
-    r = s.get(url,cookies = cookie_data, headers={'Referer': referer})
+    r = s.get(url,cookies = cookie_data, headers={'Referer': referer, 'User-Agent': ''})
     referer = r.url
     return r
 
@@ -56,7 +56,7 @@ def minerva_post(func,req, base_url = shib_credentials.lms_url):
 
     global referer
     url = base_url + func
-    r = s.post(url,data = req,cookies = cookie_data,headers = {'Referer': referer, 'Content-Type': 'application/x-www-form-urlencoded'})
+    r = s.post(url,data = req,cookies = cookie_data,headers = {'Referer': referer, 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': ''})
     referer = r.url
     return r
 
