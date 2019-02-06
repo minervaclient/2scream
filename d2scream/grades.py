@@ -116,7 +116,7 @@ def dump_grades(f):
             grade = s(cols[3]).rstrip('%').strip()
             if grade == '-':
                 grade = None
-            elif grade.isdigit():
+            elif grade.replace('.','',1).isdigit(): #This is a silly trick to deal with grades with a decimal point
                 grade = float(grade)
             else:
                 pass # Leave the unfiltered grade
