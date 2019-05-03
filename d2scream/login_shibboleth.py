@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 
 from .minerva_common import *
 from .grades import *
+from .course_ids import *
 from . import shib_credentials
 
 import sys
@@ -61,13 +62,23 @@ def shibboleth_login():
     r5 = minerva_get('d2l/lp/auth/login/ProcessLoginActions.d2l', base_url=shib_credentials.lms_url)
 
     # At this point, we're officially in. r5.text holds some html goop we can use, along with further authorization steps to see a list of courses
-    # It is so much less painful to see info about particular courses if you know their code. As a POC, let's get some info from URBP201
-    class_code = sys.argv[1] 
-    # This is the list of assignments
-    r6 = minerva_get("d2l/lms/grades/my_grades/main.d2l?ou=%s" % (class_code), base_url=shib_credentials.lms_url)
-    print as_json(dump_grades(r6.text))
-    
+    # It is so much less painful to see info about particular courses if you know their code.
+   
 
+def demo(): 
+    shibboleth_login()
+    # This is the gradebook
+    #print as_json(dump_grades(sys.argv[1]))
+    print "Enter a number to see your grades from that course..."
+
+    courses = dump_courses()
+    for counter,course in zip(range(1,len(courses) + 1),courses):
+        print "#%d: %8s = %s" % (counter, course.ou, course.course)
+
+    choice = courses[int(input("? "))]
+    
+    print as_json(dump_grades(choice.ou))
+ 
     
     
 
@@ -77,4 +88,4 @@ def shibboleth_dummy_post():
     return "shib_idp_ls_exception.shib_idp_session_ss=&shib_idp_ls_success.shib_idp_session_ss=false&shib_idp_ls_value.shib_idp_session_ss=&shib_idp_ls_exception.shib_idp_persistent_ss=&shib_idp_ls_success.shib_idp_persistent_ss=false&shib_idp_ls_value.shib_idp_persistent_ss=&shib_idp_ls_supported=&_eventId_proceed="
 
 
-shibboleth_login() 
+demo() 

@@ -78,7 +78,7 @@ def unshift_indent(texts):
 def as_json(objs):
     return json.dumps(objs, default = lambda x: x.__dict__, indent = 2, sort_keys = True)
 
-def dump_grades(f):
+def parse_grades(f):
     html = minerva_parser(f)
     rows = html.find('table', {'summary': 'List of grade items and their values'}).findAll('tr')
     gradebook = []
@@ -134,4 +134,8 @@ def dump_grades(f):
         gradebook.append(struct)
 
     return gradebook
+
+def dump_grades(ou):
+    data = minerva_get("d2l/lms/grades/my_grades/main.d2l?ou=%s" % (ou), base_url=shib_credentials.lms_url)
+    return parse_grades(data.text)
 
