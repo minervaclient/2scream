@@ -75,7 +75,7 @@ def demo():
     for counter,course in zip(range(1,len(courses) + 1),courses):
         print "#%2d: %6s = %s" % (counter, course.ou, course.course)
 
-    choice = courses[int(input("? "))]
+    choice = courses[int(input("? ")) - 1]
     
     print as_json(dump_grades(choice.ou))
  
