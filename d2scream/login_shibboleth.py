@@ -6,6 +6,8 @@ from __future__ import unicode_literals
 from .minerva_common import *
 from .grades import *
 from .course_ids import *
+from .assign import *
+
 from . import shib_credentials
 
 import sys
@@ -78,7 +80,7 @@ def demo():
     choice = courses[int(input("? ")) - 1]
     
     print as_json(dump_grades(choice.ou))
- 
+    print as_json(dump_assign(choice.ou)) 
     
     
 
