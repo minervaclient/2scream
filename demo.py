@@ -12,8 +12,12 @@ def menu(courses):
 def demo():
     d2s = d2scream.login_saved()
     courses = d2s.courses()
-    course = menu(courses)
-    grades = d2s.using(course).grades()
-    print(grades.csv())
+    for course in courses[1:]:
+        print(course.course, "###")
+        grades = d2s.using(course).grades()
+        print(grades.json())
+
+        assigns = d2s.using(course).assignments()
+        print(assigns.json())
 
 demo()

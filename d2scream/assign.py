@@ -32,6 +32,14 @@ class Assign(formatters.Formattable):
         self.closed_date = None # When were submissions closed
         self.group = None # The Group of the assignment, if a group assignment
 
+
+def maybe_date(text):
+    try:
+        return dateutil.parser.parse(text,fuzzy=True)
+    except ValueError:
+        # Actually not a date
+        return None
+
 def parse_single(cols):
     self = Assign()
     
@@ -43,7 +51,7 @@ def parse_single(cols):
         info = info.get_text()
         if info.startswith('Closed '):
             closure = info.replace('Closed ','')
-            self.closed_date = dateutil.parser.parse(closure,fuzzy=True)
+            self.closed_date = maybe_date(closure)
 
     #### Getting the group of the assignment, if applicable
     icons = cols[0].find_all('d2l-icon')
@@ -65,7 +73,7 @@ def parse_single(cols):
         self.evaluation_link = evaluation_read['href']
         self.evaluation_read = evaluation_read.get_text() == 'Read'
     
-    self.due_date = dateutil.parser.parse(cols[4].get_text(),fuzzy=True)
+    self.due_date = maybe_date(cols[4].get_text())
     return self
 
     

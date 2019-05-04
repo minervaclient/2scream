@@ -67,6 +67,7 @@ def strip_all(elms):
     return [elm.getText('\n').strip() for elm in elms if elm.getText().strip() != ""]
 
 def s(elm):
+    if elm is None: return None
     return elm.get_text('\n').strip() if elm.get_text().strip() != "" else None
 
 
@@ -81,10 +82,35 @@ def to_float(text):
     else:
         return None
 
+def to_frac(text):
+    text = s(text)
+    if text.endswith('%'):
+        return Frac(to_float(text.rstrip('%').strip()),100.0)
+    else:
+        p = text.split(' / ')
+        return Frac(to_float(p[0]),to_float(p[1]))
+
+def make_colmap(cols):
+    colmap = {
+        'Grade Item': None,
+        'Points': None,
+        'Weight Achieved': None,
+        'Grade': None,
+        'Feedback': None
+    }
+
+    for i,col in enumerate(cols):
+          colmap[s(col)] = i
+
+    return lambda row, col: row[colmap[col]] if colmap[col] is not None else None
+
 def parse_grades(f):
     html = minerva_parser(f)
-    rows = html.find('table', {'summary': 'List of grade items and their values'}).findAll('tr')
+    rows = html.find('table', {'summary': 'List of grade items and their values'}).find('tbody',recursive=False).findAll('tr',recursive=False)
     gradebook = []
+
+    get = make_colmap(rows[0])
+
     for row in rows[1:]:
         struct = Grade()
         if row.has_attr('class') and 'd_ggl1' in row['class']:
@@ -92,32 +118,31 @@ def parse_grades(f):
         else: 
             struct.category = False
 
-        cols = row.findAll(['td','th'])
+        cols = row.findAll(['td','th'],recursive=False)
         cols = unshift_indent(cols)
         
-        if s(cols[0]):
-            struct.title = s(cols[0])
+        if s(get(cols,'Grade Item')):
+            struct.title = s(get(cols,'Grade Item'))
 
-        if s(cols[1]): 
-            spans = cols[1].findAll('span')
+        if s(get(cols,'Points')): 
+            spans = get(cols,'Points').findAll('span')
 
             if spans:
                 actual_points = spans[0]
                 struct.notes = strip_all(spans[1:])
             else:
-                actual_points = cols[1]
+                actual_points = get(cols,'Points')
 
             points = s(actual_points).split(' / ')
 
             struct.points =  Frac(to_float(points[0]),to_float(points[1]))
 
 
-        if s(cols[2]):
-            weight = s(cols[2]).split(' / ')
-            struct.weight = Frac(to_float(weight[0]), to_float(weight[1]))
+        if s(get(cols,'Weight Achieved')):
+            struct.weight = to_frac(get(cols,'Weight Achieved'))
         
-        if s(cols[3]):
-            grade = s(cols[3]).rstrip('%').strip()
+        if s(get(cols,'Grade')):
+            grade = s(get(cols,'Grade')).rstrip('%').strip()
             if grade == '-':
                 grade = None
             elif grade.replace('.','',1).isdigit(): #This is a silly trick to deal with grades with a decimal point
@@ -128,11 +153,14 @@ def parse_grades(f):
             struct.grade = grade
 
 
-        if len(cols) >= 5 and s(cols[4]):
-            inner_div = cols[4].find('div', {'class': 'd2l-grades-individualcommentlabelcontainer'}).find('div')
-            if s(inner_div):
-                feedback = strip_all(inner_div.findAll('div', recursive = False))
-                struct.feedback = feedback[1]
+        if s(get(cols,'Feedback')):
+            feedback_individual = get(cols,'Feedback').find('div', {'class': 'd2l-grades-individualcommentlabelcontainer'})
+            if feedback_individual:
+                inner_div = feedback_individual.find('div')
+                if s(inner_div):
+                    feedback = strip_all(inner_div.findAll('div', recursive = False))
+                    struct.feedback = feedback[1]
+                # Could be a rubric otherwise, damn it
 
 
         gradebook.append(struct)
