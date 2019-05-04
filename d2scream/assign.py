@@ -2,12 +2,13 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 from .minerva_common import *
-from . import shib_credentials
+from . import formatters
 
 import re
 import json
 import dateutil.parser
 import datetime
+
 
 """
 Still to do:
@@ -18,17 +19,7 @@ Still to do:
 5. Making submissions
 """
 
-def serializer(x):
-    if isinstance(x,datetime.datetime):
-        return x.strftime("%Y-%m-%dT%H:%M:%S")
-    else:
-        return x.__dict__
-
-
-def as_json(objs):
-    return json.dumps(objs, default = serializer , indent = 2, sort_keys = True)
-
-class Assign():
+class Assign(formatters.Formattable):
     def __init__(self):
         self.name = ""
         self.category = False # Is this an assignment or a group of assignments
@@ -98,8 +89,8 @@ def parse_assign(f):
 
         assigns.append(assign)
 
-    return assigns
+    return formatters.FmtList(assigns)
 
-def dump_assign(ou):
+def dump(shib_credentials,ou):
     data = minerva_get("d2l/lms/dropbox/user/folders_list.d2l?ou=%s&isprv=0" % (ou), base_url=shib_credentials.lms_url)
     return parse_assign(data.text)

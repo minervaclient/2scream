@@ -3,14 +3,14 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 from .minerva_common import *
-from . import shib_credentials
+from . import formatters
 
 import re
 import json
 
 PARSE_BITS = True
 
-class Course():
+class Course(formatters.Formattable):
     def __init__(self):
         self.ou = None
         self.title = None
@@ -54,12 +54,12 @@ def parse_courses(blob):
                 course.name = title[2]
 
         courses.append(course)
-    return courses
+    return formatters.FmtList(courses)
             
 
     
 
-def dump_courses():
+def dump(shib_credentials):
     data = minerva_get("d2l/lp/courseSelector/%s/InitPartial?_d2l_prc$headingLevel=2&_d2l_prc$scope=&_d2l_prc$hasActiveForm=false&isXhr=true&requestId=2" % ("6606"), base_url=shib_credentials.lms_url)
     return parse_courses(data.text)
 

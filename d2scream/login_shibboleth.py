@@ -4,11 +4,14 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 from .minerva_common import *
+
+"""
 from .grades import *
 from .course_ids import *
 from .assign import *
 
 from . import shib_credentials
+"""
 
 import sys
 import re
@@ -35,7 +38,7 @@ requests_log.setLevel(logging.DEBUG)
 requests_log.propagate = True
 """
 
-def shibboleth_login():
+def login(shib_credentials):
     """ Ask myCourses for a shibboleth based login """
 
     # Request shibboleth redirect
@@ -67,6 +70,7 @@ def shibboleth_login():
     # It is so much less painful to see info about particular courses if you know their code.
    
 
+"""
 def demo(): 
     shibboleth_login()
     # This is the gradebook
@@ -81,7 +85,7 @@ def demo():
     
     print as_json(dump_grades(choice.ou))
     print as_json(dump_assign(choice.ou)) 
-    
+"""    
     
 
 
@@ -90,4 +94,3 @@ def shibboleth_dummy_post():
     return "shib_idp_ls_exception.shib_idp_session_ss=&shib_idp_ls_success.shib_idp_session_ss=false&shib_idp_ls_value.shib_idp_session_ss=&shib_idp_ls_exception.shib_idp_persistent_ss=&shib_idp_ls_success.shib_idp_persistent_ss=false&shib_idp_ls_value.shib_idp_persistent_ss=&shib_idp_ls_supported=&_eventId_proceed="
 
 
-demo() 

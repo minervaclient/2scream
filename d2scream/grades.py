@@ -2,12 +2,12 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 from .minerva_common import *
-from . import shib_credentials
+from . import formatters
 
 import re
 import json
 
-class Grade(object):
+class Grade(formatters.Formattable):
     def __init__(self):
         """
         title:str option 
@@ -75,9 +75,6 @@ def unshift_indent(texts):
     return texts
 
 
-def as_json(objs):
-    return json.dumps(objs, default = lambda x: x.__dict__, indent = 2, sort_keys = True)
-
 def parse_grades(f):
     html = minerva_parser(f)
     rows = html.find('table', {'summary': 'List of grade items and their values'}).findAll('tr')
@@ -133,9 +130,9 @@ def parse_grades(f):
 
         gradebook.append(struct)
 
-    return gradebook
+    return formatters.FmtList(gradebook)
 
-def dump_grades(ou):
+def dump(shib_credentials,ou):
     data = minerva_get("d2l/lms/grades/my_grades/main.d2l?ou=%s" % (ou), base_url=shib_credentials.lms_url)
     return parse_grades(data.text)
 
