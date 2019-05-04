@@ -1,3 +1,6 @@
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 from . import login_shibboleth
 from . import course_ids
 from . import grades as grades_mod

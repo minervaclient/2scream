@@ -1,3 +1,6 @@
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 import json
 import datetime
 import csv
@@ -30,11 +33,11 @@ class Formattable(object):
         return json.dumps(self, default = _serializer, indent = 2, sort_keys = True)
 
     def csv(self):
-        s = io.StringIO()
+        s = io.BytesIO()
         writer = csv.DictWriter(s,next(_flatten_tuple([self])))
         writer.writerows(_flatten_tuple([self]))
         s.seek(0)
-        return s.read()
+        return s.getvalue()
 
     def yaml(self, human = True):
         import yaml
@@ -49,12 +52,12 @@ class Formattable(object):
 
 class FmtList(Formattable,list):
     def csv(self):
-        s = io.StringIO()
+        s = io.BytesIO()
         writer = csv.DictWriter(s,next(_flatten_tuple(self)))
         writer.writeheader()
         writer.writerows(_flatten_tuple(self))
         s.seek(0)
-        return s.read()
+        return s.getvalue()
 
     def __str__(self):
         return pprint.pformat(self)

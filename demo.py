@@ -1,3 +1,6 @@
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 import d2scream
 
 def menu(courses):
@@ -11,6 +14,6 @@ def demo():
     courses = d2s.courses()
     course = menu(courses)
     grades = d2s.using(course).grades()
-    print(grades.json())
+    print(grades.csv())
 
 demo()
