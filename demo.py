@@ -9,7 +9,7 @@ def menu(courses):
     
     return courses[int(input("====> ")) - 1]
 
-def demo():
+def demo1():
     d2s = d2scream.login_saved()
     courses = d2s.courses()
     for course in courses[1:]:
@@ -20,4 +20,13 @@ def demo():
         assigns = d2s.using(course).assignments()
         print(assigns.json())
 
-demo()
+def demo2():
+    d2s = d2scream.login_saved()
+    courses = d2s.courses()
+    course = menu(courses)
+    course = d2s.using(course)
+    print(course.grades().sql())
+    print(course.assignments().sql())
+
+
+demo2()

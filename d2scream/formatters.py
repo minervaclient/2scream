@@ -36,7 +36,7 @@ def _sql_create(table, keys):
         
         return "text"
 
-    sql_keys = [ "%s %s" % (key, sql_type(sample)) for key,sample in keys.items()]
+    sql_keys = [ "\"%s\" %s" % (key, sql_type(sample)) for key,sample in keys.items()]
     sql_keys = ", ".join(sql_keys)
     return "CREATE TABLE IF NOT EXISTS %s (%s);" % (table, sql_keys)
 
@@ -50,6 +50,9 @@ def _sql_insert(table,rows):
                 return "0"
             if isinstance(v,list):
                 return "'%s'" % (repr(v))
+            if isinstance(v,datetime.datetime):
+                return repr(v.strftime("%Y-%m-%dT%H:%M:%S"))
+
             return repr(v)
 
         sql_rows = []
