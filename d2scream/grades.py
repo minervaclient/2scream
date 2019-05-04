@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from .minerva_common import *
 from . import formatters
+from collections import namedtuple
 
 import re
 import json
@@ -26,7 +27,7 @@ class Grade(formatters.Formattable):
         Points achieved, out of the total possible points.
         An entry may be None if it was not recorded in the gradebook.
         """
-        self.points = (None,None)
+        self.points = Frac(0.0,0.0)
 
         """
         notes:str list option 
@@ -39,7 +40,7 @@ class Grade(formatters.Formattable):
         weight: float * float
         Weight (i.e. portion of the final grade) out of the total possible weight.
         """
-        self.weight = (0.0,0.0)
+        self.weight = Frac(0.0,0.0)
 
         """
         grade: any
@@ -103,11 +104,11 @@ def parse_grades(f):
 
             points = s(actual_points).split(' / ')
 
-            struct.points =  tuple(float(p) if p != '-' else None for p in points)
+            struct.points =  Frac(float(p) if p != '-' else None for p in points)
 
 
         if s(cols[2]):
-            struct.weight = tuple(float(n) if n != '-' else None for n in s(cols[2]).split(' / '))
+            struct.weight = Frac(float(n) if n != '-' else None for n in s(cols[2]).split(' / '))
         
         if s(cols[3]):
             grade = s(cols[3]).rstrip('%').strip()
