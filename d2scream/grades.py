@@ -75,6 +75,11 @@ def unshift_indent(texts):
         texts.pop(0)
     return texts
 
+def to_float(text):
+    if text != '-':
+        return float(text)
+    else:
+        return None
 
 def parse_grades(f):
     html = minerva_parser(f)
@@ -104,11 +109,12 @@ def parse_grades(f):
 
             points = s(actual_points).split(' / ')
 
-            struct.points =  Frac(float(p) if p != '-' else None for p in points)
+            struct.points =  Frac(to_float(points[0]),to_float(points[1]))
 
 
         if s(cols[2]):
-            struct.weight = Frac(float(n) if n != '-' else None for n in s(cols[2]).split(' / '))
+            weight = s(cols[2]).split(' / ')
+            struct.weight = Frac(to_float(weight[0]), to_float(weight[1]))
         
         if s(cols[3]):
             grade = s(cols[3]).rstrip('%').strip()
