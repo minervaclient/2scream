@@ -88,7 +88,12 @@ def to_frac(text):
         return Frac(to_float(text.rstrip('%').strip()),100.0)
     else:
         p = text.split(' / ')
-        return Frac(to_float(p[0]),to_float(p[1]))
+        if len(p) == 2:
+            return Frac(to_float(p[0]),to_float(p[1]))
+        else:
+            # This is really dodgy, but ok
+            return Frac(to_float(p[0]),1.0)
+
 
 def make_colmap(cols):
     colmap = {
@@ -100,7 +105,7 @@ def make_colmap(cols):
     }
 
     for i,col in enumerate(cols):
-          colmap[s(col)] = i
+        colmap[s(col)] = i
 
     return lambda row, col: row[colmap[col]] if colmap[col] is not None else None
 
@@ -108,8 +113,7 @@ def parse_grades(f):
     html = minerva_parser(f)
     rows = html.find('table', {'summary': 'List of grade items and their values'}).find('tbody',recursive=False).findAll('tr',recursive=False)
     gradebook = []
-
-    get = make_colmap(rows[0])
+    get = make_colmap(rows[0].findAll(['th']))
 
     for row in rows[1:]:
         struct = Grade()
@@ -123,7 +127,8 @@ def parse_grades(f):
         
         if s(get(cols,'Grade Item')):
             struct.title = s(get(cols,'Grade Item'))
-
+            struct.title = struct.title.replace('\n','')
+            struct.title = re.sub('  +',' ',struct.title)
         if s(get(cols,'Points')): 
             spans = get(cols,'Points').findAll('span')
 
