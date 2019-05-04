@@ -27,6 +27,19 @@ def _flatten_tuple(lst):
 
         yield d
 
+def _sql_create(table, keys):
+    def sql_type(v):
+        if isinstance(v,int):
+            return "int"
+        if isinstance(v,float):
+            return "real"
+        
+        return "text"
+
+    sql_keys = [ "%s %s" % (key, sql_type(sample)) for key,sample in keys.items()]
+    sql_keys = ", ".join(sql_keys)
+    return "CREATE TABLE IF NOT EXISTS %s (%s);" % (table, sql_keys)
+
 def _sql_insert(table,rows):
         def sql_repr(v):
             if v is None:
@@ -80,6 +93,13 @@ class FmtList(Formattable,list):
         writer.writerows(_flatten_tuple(self))
         s.seek(0)
         return s.getvalue()
+
+
+    def sql(self):
+        cls = self[0].__class__.__name__.lower()
+        create = _sql_create(cls,next(_flatten_tuple(self)))
+        ins = _sql_insert(cls, _flatten_tuple(self))
+        return "%s\n%s" % (create,ins)
 
     def __str__(self):
         return pprint.pformat(self)
