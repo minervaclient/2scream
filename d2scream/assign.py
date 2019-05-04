@@ -91,7 +91,7 @@ def parse_assign(f):
         cols = row.findAll(['th','td'], recursive=False)
         if len(cols) == 1:
             assign = Assign()
-            assign.group = True
+            assign.category = True
             assign.name = cols[0].get_text()
         else:
             assign = parse_single(cols)
