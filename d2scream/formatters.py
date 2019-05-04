@@ -27,6 +27,26 @@ def _flatten_tuple(lst):
 
         yield d
 
+def _sql_insert(table,rows):
+        def sql_repr(v):
+            if v is None:
+                return "null"
+            if v == True:
+                return "1"
+            if v == False:
+                return "0"
+            if isinstance(v,list):
+                return "'%s'" % (repr(v))
+            return repr(v)
+
+        sql_rows = []
+        for row in rows:
+            row = ", ".join([sql_repr(col) for col in row.values()])
+            row = "(%s)" % (row)
+            sql_rows.append(row)
+        
+        values = ",\n".join(sql_rows)
+        return "INSERT INTO %s VALUES %s;" % (table, values)
     
 class Formattable(object):
     def json(self):
@@ -45,7 +65,9 @@ class Formattable(object):
             yaml.add_multi_representer(list,yaml.representer.SafeRepresenter.represent_list)
             yaml.add_multi_representer(tuple,yaml.representer.SafeRepresenter.represent_list)
         return yaml.dump(self)
-        
+
+    def sql(self):
+        return _sql_insert(self.__class__.__name__.lower(), _flatten_tuple([self]))
  
     def __str__(self):
         return pprint.pformat(self)

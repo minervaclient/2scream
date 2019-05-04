@@ -138,13 +138,19 @@ def parse_grades(f):
             else:
                 actual_points = get(cols,'Points')
 
-            points = s(actual_points).split(' / ')
-
-            struct.points =  Frac(to_float(points[0]),to_float(points[1]))
+            struct.points =  to_frac(actual_points)
 
 
         if s(get(cols,'Weight Achieved')):
-            struct.weight = to_frac(get(cols,'Weight Achieved'))
+            spans = get(cols,'Weight Achieved').findAll('span')
+
+            if spans:
+                actual_weight = spans[0]
+                struct.notes = strip_all(spans[1:])
+            else:
+                actual_weight = get(cols,'Weight Achieved')
+
+            struct.weight = to_frac(actual_weight)
         
         if s(get(cols,'Grade')):
             grade = s(get(cols,'Grade')).rstrip('%').strip()
