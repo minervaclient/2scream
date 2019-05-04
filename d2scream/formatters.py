@@ -33,7 +33,7 @@ class Formattable(object):
         return json.dumps(self, default = _serializer, indent = 2, sort_keys = True)
 
     def csv(self):
-        s = io.BytesIO()
+        s = io.StringIO()
         writer = csv.DictWriter(s,next(_flatten_tuple([self])))
         writer.writerows(_flatten_tuple([self]))
         s.seek(0)
@@ -52,7 +52,7 @@ class Formattable(object):
 
 class FmtList(Formattable,list):
     def csv(self):
-        s = io.BytesIO()
+        s = io.StringIO()
         writer = csv.DictWriter(s,next(_flatten_tuple(self)))
         writer.writeheader()
         writer.writerows(_flatten_tuple(self))
