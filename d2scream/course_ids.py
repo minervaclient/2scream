@@ -14,6 +14,7 @@ PARSE_BITS = True
 
 @dataclass
 class Course(formatters.Formattable):
+    __slots__ = 'ou','full_title','term','name','course','internal_code'
     """
     The internal identifier for a course,
     which must be used in further requests pertaining to that course.
@@ -29,24 +30,29 @@ class Course(formatters.Formattable):
     """
     For universities where this may be determined, the term of the course
     """
-    term:Optional[str] = None
+    term:Optional[str]
 
     """
     For universities where this may be determined, the name of the course
     e.g. "Theory of Computation"
     """
-    name:Optional[str] = None
+    name:Optional[str]
 
     """
     For universities where this may be determined, the code of the course,
     which generally may be used to make requests to other systems about the same course
     """
-    course:Optional[str] = None
+    course:Optional[str]
 
     """
     The meaning of this field is unknown. It is offered for your confusion.
     """
-    internal_code:Optional[str] = None
+    internal_code:Optional[str]
+
+    def __init__(self,ou,full_title):
+        self.ou = ou
+        self.full_title = full_title
+
 
 
 
