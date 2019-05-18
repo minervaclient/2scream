@@ -19,6 +19,7 @@ Still to do:
 5. Making submissions
 """
 
+
 class Assign(formatters.Formattable):
     def __init__(self):
         self.name = ""

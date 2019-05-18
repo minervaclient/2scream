@@ -22,7 +22,7 @@ class Client():
     def __init__(self,creds):
         self.creds = creds
 
-    def courses(self):
+    def courses(self) -> formatters.FmtList[course_ids.Course]:
         return course_ids.dump(self.creds)
 
     def grades(self,ou) -> formatters.FmtList[grades_mod.Grade]:
@@ -31,8 +31,8 @@ class Client():
     def assignments(self,ou):
         return assign_mod.dump(self.creds,ou)
 
-    def using(self,course):
-        return CourseActions(self.creds, course.ou)
+    def using(self,ou):
+        return CourseActions(self.creds, ou)
 
 def login(creds):
     login_shibboleth.login(creds)

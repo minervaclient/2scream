@@ -122,7 +122,7 @@ def with_notes(notes:List[str], fn:Callable[[str], V]) -> Callable[[Any],V]:
 
 def parse_grades(f:str) -> FmtList[Grade]:
     
-    def category():
+    def category(row):
         return row.has_attr('class') and 'd_ggl1' in row['class']
 
     def title(col:Any):
@@ -159,7 +159,7 @@ def parse_grades(f:str) -> FmtList[Grade]:
         notes:List[str] = []
         return Grade(
                 title = if_col('Grade Item', title),
-                category = category(),
+                category = category(row),
                 points = if_col('Points', with_notes(notes, to_frac)),
                 notes = notes,
                 weight = if_col('Weight Achieved', with_notes(notes, to_frac)),

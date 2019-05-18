@@ -14,17 +14,17 @@ def demo1():
     courses = d2s.courses()
     for course in courses[1:]:
         print(course.course, "###")
-        grades = d2s.using(course).grades()
+        grades = d2s.using(course.ou).grades()
         print(grades.json())
 
-        assigns = d2s.using(course).assignments()
+        assigns = d2s.using(course.ou).assignments()
         print(assigns.json())
 
 def demo2():
     d2s = d2scream.login_saved()
     courses = d2s.courses()
     course = menu(courses)
-    course = d2s.using(course)
+    course = d2s.using(course.ou)
     print(course.grades().sql())
     print(course.assignments().sql())
 
