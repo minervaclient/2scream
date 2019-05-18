@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+from . import formatters
 from . import login_shibboleth
 from . import course_ids
 from . import grades as grades_mod
@@ -24,7 +25,7 @@ class Client():
     def courses(self):
         return course_ids.dump(self.creds)
 
-    def grades(self,ou):
+    def grades(self,ou) -> formatters.FmtList[grades_mod.Grade]:
         return grades_mod.dump(self.creds,ou)
     
     def assignments(self,ou):

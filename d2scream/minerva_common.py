@@ -6,10 +6,6 @@
 from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import unicode_literals
-from builtins import str
-from builtins import input
-from builtins import range
-from builtins import object
 
 import collections
 import requests,sys
@@ -17,9 +13,9 @@ import re
 import datetime
 from datetime import datetime as dt
 from bs4 import BeautifulSoup
-from . import shib_credentials
+from typing import Dict
 
-cookie_data = {}
+cookie_data:Dict[str,str] = {}
 referer = ""
 s = requests.Session()
 verbose = True
@@ -34,7 +30,7 @@ Warning: Falling back to html.parser; some commands may fail. Installing html5li
     $ pip install html5lib
 """)    
 
-def minerva_get(func, base_url = shib_credentials.lms_url):
+def minerva_get(func, base_url):
     """A GET request to minerva that accepts a string: the GET request arguments.
     
     """
@@ -48,7 +44,7 @@ def minerva_get(func, base_url = shib_credentials.lms_url):
     return r
 
 
-def minerva_post(func,req, base_url = shib_credentials.lms_url):
+def minerva_post(func,req, base_url):
     """A POST request to minerva that accepts a string for URL arguments and the data for the POST request.
     
     """

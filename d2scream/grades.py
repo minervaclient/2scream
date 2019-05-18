@@ -1,66 +1,53 @@
-from __future__ import absolute_import
 from __future__ import unicode_literals
+from __future__ import absolute_import
 
-from .minerva_common import *
-from . import formatters
+from .minerva_common import minerva_parser,minerva_get,Frac
+from .formatters import FmtList,Formattable
 from collections import namedtuple
-
+from typing import List, Union, Optional, Dict, Any, TypeVar,Callable
+from dataclasses import dataclass
 import re
 import json
 
-class Grade(formatters.Formattable):
-    def __init__(self):
+@dataclass
+class Grade(Formattable):
+        """ 
+        The title of the grade entry
         """
-        title:str option 
-        The title as it appears in the gradebook.
-        """
-        self.title = None
+        title:Optional[str]
 
+        """
+        True if this is a category of grade items, rather than a single item
         """
         category:bool
-        True if this is a category of grade items, rather than a particular assessment
-        """
-        self.category = False
 
         """
-        points:float option*float option 
         Points achieved, out of the total possible points.
         An entry may be None if it was not recorded in the gradebook.
         """
-        self.points = Frac(0.0,0.0)
+        points:Optional[Frac]
 
         """
-        notes:str list option 
         System notes, if any, regarding the points (e.g. "Dropped!")
         2scream does not interpret this field, your application should make use of then notes which pertain to it.
         """
-        self.notes = []
+        notes:List[str]
 
         """
-        weight: float * float
         Weight (i.e. portion of the final grade) out of the total possible weight.
         """
-        self.weight = Frac(0.0,0.0)
+        weight:Optional[Frac]
 
         """
-        grade: any
         The grade as recorded in the gradebook. Generally a float, but may be None if not entered, or a string if the instructor entered a non-standard value
         """
-        self.grade = None
+        grade:Union[float,str,None]
 
         """
-        feedback: str option
         Feedback comments as a string.
         """
-        self.feedback = None
+        feedback:Optional[str]
 
-    def __repr__(self):
-        return self.__dict__.__repr__()
-    
-    
-
-    
-    
 
 
 def strip_all(elms):
@@ -107,78 +94,86 @@ def make_colmap(cols):
     for i,col in enumerate(cols):
         colmap[s(col)] = i
 
-    return lambda row, col: row[colmap[col]] if colmap[col] is not None else None
+    return colmap
 
-def parse_grades(f):
-    html = minerva_parser(f)
-    rows = html.find('table', {'summary': 'List of grade items and their values'}).find('tbody',recursive=False).findAll('tr',recursive=False)
-    gradebook = []
-    get = make_colmap(rows[0].findAll(['th']))
+R = TypeVar('R')
+V = TypeVar('V')
+print(R)
+def call_if_column_value(column_map:Dict[str,Optional[int]], row:List[R], header:str, fn:Callable[[R],V]) -> Optional[V]: 
+    column_index = column_map[header]
+    if column_index is not None:
+        cell:R = row[column_index]
+        if s(cell):
+            return fn(cell)
+    
+    return None
 
-    for row in rows[1:]:
-        struct = Grade()
-        if row.has_attr('class') and 'd_ggl1' in row['class']:
-            struct.category = True
-        else: 
-            struct.category = False
+            
+def with_notes(notes:List[str], fn:Callable[[str], V]) -> Callable[[Any],V]:
+    def with_notes_real(notes, fn, cell):
+        spans = cell.findAll('span')
+        if spans:
+            notes.extend(strip_all(spans[1:]))
+            return fn(spans[0])
+        else:
+            return fn(cell)
 
+    return lambda cell: with_notes_real(notes, fn, cell)
+
+def parse_grades(f:str) -> FmtList[Grade]:
+    
+    def category():
+        return row.has_attr('class') and 'd_ggl1' in row['class']
+
+    def title(col:Any):
+        col = s(col)
+        col = col.replace('\n','')
+        col = re.sub(' +',' ',col)
+        return col
+
+    def grade(col):
+        col = s(col).rstrip('%').strip()
+        if col == '-':
+            return None
+        elif col.replace('.','',1).isdigit():  #This is a silly trick to deal with grades with a decimal point
+            return float(col)
+        else:
+            return col
+
+    def feedback(col):
+        feedback_individual = col.find('div', {'class': 'd2l-grades-individualcommentlabelcontainer'})
+        if feedback_individual:
+            inner_div = feedback_individual.find('div')
+            if s(inner_div):
+                feedback_text = strip_all(inner_div.findAll('div', recursive = False))
+                return feedback_text[1]
+
+        # Could be a rubric otherwise, damn it
+        return None
+
+    def parse_grade(colmap, row) -> Grade:
         cols = row.findAll(['td','th'],recursive=False)
         cols = unshift_indent(cols)
-        
-        if s(get(cols,'Grade Item')):
-            struct.title = s(get(cols,'Grade Item'))
-            struct.title = struct.title.replace('\n','')
-            struct.title = re.sub('  +',' ',struct.title)
-        if s(get(cols,'Points')): 
-            spans = get(cols,'Points').findAll('span')
+        if_col = lambda header,fn: call_if_column_value(colmap, cols, header, fn)
+           
+        notes:List[str] = []
+        return Grade(
+                title = if_col('Grade Item', title),
+                category = category(),
+                points = if_col('Points', with_notes(notes, to_frac)),
+                notes = notes,
+                weight = if_col('Weight Achieved', with_notes(notes, to_frac)),
+                grade = if_col('Grade', grade),
+                feedback = if_col('Feedback', feedback)
+        )
 
-            if spans:
-                actual_points = spans[0]
-                struct.notes = strip_all(spans[1:])
-            else:
-                actual_points = get(cols,'Points')
+    html = minerva_parser(f)
+    rows = html.find('table', {'summary': 'List of grade items and their values'}).find('tbody',recursive=False).findAll('tr',recursive=False)
+    colmap = make_colmap(rows[0].findAll(['th']))
 
-            struct.points =  to_frac(actual_points)
+    return FmtList(map(lambda row: parse_grade(colmap,row), rows[1:]))
 
-
-        if s(get(cols,'Weight Achieved')):
-            spans = get(cols,'Weight Achieved').findAll('span')
-
-            if spans:
-                actual_weight = spans[0]
-                struct.notes = strip_all(spans[1:])
-            else:
-                actual_weight = get(cols,'Weight Achieved')
-
-            struct.weight = to_frac(actual_weight)
-        
-        if s(get(cols,'Grade')):
-            grade = s(get(cols,'Grade')).rstrip('%').strip()
-            if grade == '-':
-                grade = None
-            elif grade.replace('.','',1).isdigit(): #This is a silly trick to deal with grades with a decimal point
-                grade = float(grade)
-            else:
-                pass # Leave the unfiltered grade
-
-            struct.grade = grade
-
-
-        if s(get(cols,'Feedback')):
-            feedback_individual = get(cols,'Feedback').find('div', {'class': 'd2l-grades-individualcommentlabelcontainer'})
-            if feedback_individual:
-                inner_div = feedback_individual.find('div')
-                if s(inner_div):
-                    feedback = strip_all(inner_div.findAll('div', recursive = False))
-                    struct.feedback = feedback[1]
-                # Could be a rubric otherwise, damn it
-
-
-        gradebook.append(struct)
-
-    return formatters.FmtList(gradebook)
-
-def dump(shib_credentials,ou):
+def dump(shib_credentials,ou) -> FmtList[Grade]:
     data = minerva_get("d2l/lms/grades/my_grades/main.d2l?ou=%s" % (ou), base_url=shib_credentials.lms_url)
     return parse_grades(data.text)
 

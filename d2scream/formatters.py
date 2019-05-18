@@ -7,7 +7,7 @@ import csv
 import io
 import collections
 import pprint
-
+from typing import TypeVar, List
 
 def _serializer(x):
     if isinstance(x,datetime.datetime):
@@ -88,7 +88,8 @@ class Formattable(object):
     def __str__(self):
         return pprint.pformat(self)
 
-class FmtList(Formattable,list):
+T = TypeVar('T')
+class FmtList(Formattable,List[T]):
     def csv(self):
         s = io.StringIO()
         writer = csv.DictWriter(s,next(_flatten_tuple(self)))
