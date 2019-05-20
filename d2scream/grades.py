@@ -98,7 +98,6 @@ def make_colmap(cols):
 
 R = TypeVar('R')
 V = TypeVar('V')
-print(R)
 def call_if_column_value(column_map:Dict[str,Optional[int]], row:List[R], header:str, fn:Callable[[R],V]) -> Optional[V]: 
     column_index = column_map[header]
     if column_index is not None:
@@ -173,7 +172,7 @@ def parse_grades(f:str) -> FmtList[Grade]:
 
     return FmtList(map(lambda row: parse_grade(colmap,row), rows[1:]))
 
-def dump(shib_credentials,ou) -> FmtList[Grade]:
-    data = minerva_get("d2l/lms/grades/my_grades/main.d2l?ou=%s" % (ou), base_url=shib_credentials.lms_url)
+def dump(shib_credentials,course) -> FmtList[Grade]:
+    data = minerva_get("d2l/lms/grades/my_grades/main.d2l?ou=%s" % (course.ou), base_url=shib_credentials.lms_url)
     return parse_grades(data.text)
 

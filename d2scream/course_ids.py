@@ -52,6 +52,10 @@ class Course(formatters.Formattable):
     def __init__(self,ou,full_title):
         self.ou = ou
         self.full_title = full_title
+        self.term = None
+        self.name = None
+        self.course = None
+        self.internal_code = None
 
 
 

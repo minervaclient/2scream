@@ -24,7 +24,7 @@ def demo2():
     d2s = d2scream.login_saved()
     courses = d2s.courses()
     course = menu(courses)
-    course = d2s.using(course.ou)
+    course = d2s.using(course)
     print(course.grades().sql())
     print(course.assignments().sql())
 

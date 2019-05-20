@@ -13,7 +13,8 @@ import re
 import datetime
 from datetime import datetime as dt
 from bs4 import BeautifulSoup
-from typing import Dict
+from dataclasses import dataclass
+from typing import Dict,Optional
 
 cookie_data:Dict[str,str] = {}
 referer = ""
@@ -93,8 +94,19 @@ def normalize(input):
 def minerva_parser(text):
     return BeautifulSoup(text,parser)
     
+class FuckingNamedTuple:
+    pass
 
-Frac = collections.namedtuple('Frac',['num','denom'])
+@dataclass
+class Frac(FuckingNamedTuple):
+    num:float
+    denom:float
+
+@dataclass
+class CourseCode(FuckingNamedTuple):
+    subject:str
+    code:str
+    section:Optional[str]
 
 
 iso_date  = {
