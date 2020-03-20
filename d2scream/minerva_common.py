@@ -16,7 +16,7 @@ import re
 import datetime
 from datetime import datetime as dt
 from bs4 import BeautifulSoup
-from . import shib_credentials
+import shib_credentials
 
 cookie_data = {}
 referer = ""
@@ -75,7 +75,7 @@ def get_bldg_abbrev(location):
 
 def minervac_sanitize(text):
     """Encodes given text to ASCII"""
-    return text.encode('ascii','ignore')
+    return str(text.encode('ascii','ignore'))
 
 def set_loglevel(set_verbose):
     global verbose

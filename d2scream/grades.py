@@ -1,8 +1,8 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from .minerva_common import *
-from . import shib_credentials
+from minerva_common import *
+import shib_credentials
 
 import re
 import json
@@ -80,6 +80,8 @@ def as_json(objs):
 
 def dump_grades(f):
     html = minerva_parser(f)
+    with open("output1.html", "w") as file:
+        file.write(minervac_sanitize(html))
     rows = html.find('table', {'summary': 'List of grade items and their values'}).findAll('tr')
     gradebook = []
     for row in rows[1:]:
@@ -88,7 +90,7 @@ def dump_grades(f):
             struct.category = True
         else: 
             struct.category = False
-
+        
         cols = row.findAll(['td','th'])
         cols = unshift_indent(cols)
         
@@ -110,7 +112,8 @@ def dump_grades(f):
 
 
         if s(cols[2]):
-            struct.weight = tuple(float(n) if n != '-' else None for n in s(cols[2]).split(' / '))
+            struct.weight = tuple(float(n) if n != '-' else None for n in s(cols[2]).strip("%").split(' / '))
+            print(s(cols[2]))
         
         if s(cols[3]):
             grade = s(cols[3]).rstrip('%').strip()
