@@ -3,14 +3,15 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from .minerva_common import *
-from .grades import *
-from . import shib_credentials
+from minerva_common import *
+from grades import *
+from content import *
+import shib_credentials
 
 import sys
 import re
 
-"""
+
 import logging
 
 # These two lines enable debugging at httplib level (requests->urllib3->http.client)
@@ -30,7 +31,7 @@ logging.getLogger().setLevel(logging.DEBUG)
 requests_log = logging.getLogger("requests.packages.urllib3")
 requests_log.setLevel(logging.DEBUG)
 requests_log.propagate = True
-"""
+
 
 def shibboleth_login():
     """ Ask myCourses for a shibboleth based login """
@@ -60,12 +61,20 @@ def shibboleth_login():
     # Just get this random URL so myCourses knows we're in
     r5 = minerva_get('d2l/lp/auth/login/ProcessLoginActions.d2l', base_url=shib_credentials.lms_url)
 
+
     # At this point, we're officially in. r5.text holds some html goop we can use, along with further authorization steps to see a list of courses
     # It is so much less painful to see info about particular courses if you know their code. As a POC, let's get some info from URBP201
     class_code = sys.argv[1] 
     # This is the list of assignments
     r6 = minerva_get("d2l/lms/grades/my_grades/main.d2l?ou=%s" % (class_code), base_url=shib_credentials.lms_url)
-    print as_json(dump_grades(r6.text))
+    
+    print (as_json(dump_grades(r6.text)))
+
+
+    r7 = minerva_get("d2l/le/content/%s/Home" % (class_code), base_url=shib_credentials.lms_url)
+
+    print(download_stuff(r7.text,class_code))
+    print(type(r7.text))
     
 
     
