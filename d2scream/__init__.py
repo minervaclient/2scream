@@ -40,4 +40,3 @@ def login(creds):
 def login_saved():
     from . import shib_credentials
     return login(shib_credentials)
->>>>>>> 6e0b44a9b6b610e5e59a2075a449d9112457f01c

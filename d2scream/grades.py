@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from .minerva_common import *
 from . import formatters
 from collections import namedtuple
-
+    
 import re
 import json
 
@@ -111,13 +111,7 @@ def make_colmap(cols):
 
 def parse_grades(f):
     html = minerva_parser(f)
-<<<<<<< HEAD
-    with open("output1.html", "w") as file:
-        file.write(minervac_sanitize(html))
-    rows = html.find('table', {'summary': 'List of grade items and their values'}).findAll('tr')
-=======
     rows = html.find('table', {'summary': 'List of grade items and their values'}).find('tbody',recursive=False).findAll('tr',recursive=False)
->>>>>>> 6e0b44a9b6b610e5e59a2075a449d9112457f01c
     gradebook = []
     get = make_colmap(rows[0].findAll(['th']))
 
@@ -127,13 +121,8 @@ def parse_grades(f):
             struct.category = True
         else: 
             struct.category = False
-<<<<<<< HEAD
-        
-        cols = row.findAll(['td','th'])
-=======
 
         cols = row.findAll(['td','th'],recursive=False)
->>>>>>> 6e0b44a9b6b610e5e59a2075a449d9112457f01c
         cols = unshift_indent(cols)
         
         if s(get(cols,'Grade Item')):
@@ -155,11 +144,6 @@ def parse_grades(f):
         if s(get(cols,'Weight Achieved')):
             spans = get(cols,'Weight Achieved').findAll('span')
 
-<<<<<<< HEAD
-        if s(cols[2]):
-            struct.weight = tuple(float(n) if n != '-' else None for n in s(cols[2]).strip("%").split(' / '))
-            print(s(cols[2]))
-=======
             if spans:
                 actual_weight = spans[0]
                 struct.notes = strip_all(spans[1:])
@@ -167,7 +151,6 @@ def parse_grades(f):
                 actual_weight = get(cols,'Weight Achieved')
 
             struct.weight = to_frac(actual_weight)
->>>>>>> 6e0b44a9b6b610e5e59a2075a449d9112457f01c
         
         if s(get(cols,'Grade')):
             grade = s(get(cols,'Grade')).rstrip('%').strip()

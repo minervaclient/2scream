@@ -3,12 +3,7 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-<<<<<<< HEAD
-from minerva_common import *
-from grades import *
-from content import *
-import shib_credentials
-=======
+
 from .minerva_common import *
 
 """
@@ -18,7 +13,6 @@ from .assign import *
 
 from . import shib_credentials
 """
->>>>>>> 6e0b44a9b6b610e5e59a2075a449d9112457f01c
 
 import sys
 import re

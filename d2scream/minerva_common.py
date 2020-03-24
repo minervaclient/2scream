@@ -17,7 +17,7 @@ import re
 import datetime
 from datetime import datetime as dt
 from bs4 import BeautifulSoup
-import shib_credentials
+from . import shib_credentials
 
 cookie_data = {}
 referer = ""
