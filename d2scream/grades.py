@@ -1,13 +1,14 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from minerva_common import *
-import shib_credentials
+from .minerva_common import *
+from . import formatters
+from collections import namedtuple
 
 import re
 import json
 
-class Grade(object):
+class Grade(formatters.Formattable):
     def __init__(self):
         """
         title:str option 
@@ -26,7 +27,7 @@ class Grade(object):
         Points achieved, out of the total possible points.
         An entry may be None if it was not recorded in the gradebook.
         """
-        self.points = (None,None)
+        self.points = Frac(0.0,0.0)
 
         """
         notes:str list option 
@@ -39,7 +40,7 @@ class Grade(object):
         weight: float * float
         Weight (i.e. portion of the final grade) out of the total possible weight.
         """
-        self.weight = (0.0,0.0)
+        self.weight = Frac(0.0,0.0)
 
         """
         grade: any
@@ -66,6 +67,7 @@ def strip_all(elms):
     return [elm.getText('\n').strip() for elm in elms if elm.getText().strip() != ""]
 
 def s(elm):
+    if elm is None: return None
     return elm.get_text('\n').strip() if elm.get_text().strip() != "" else None
 
 
@@ -74,49 +76,101 @@ def unshift_indent(texts):
         texts.pop(0)
     return texts
 
+def to_float(text):
+    if text != '-':
+        return float(text)
+    else:
+        return None
 
-def as_json(objs):
-    return json.dumps(objs, default = lambda x: x.__dict__, indent = 2, sort_keys = True)
+def to_frac(text):
+    text = s(text)
+    if text.endswith('%'):
+        return Frac(to_float(text.rstrip('%').strip()),100.0)
+    else:
+        p = text.split(' / ')
+        if len(p) == 2:
+            return Frac(to_float(p[0]),to_float(p[1]))
+        else:
+            # This is really dodgy, but ok
+            return Frac(to_float(p[0]),1.0)
 
-def dump_grades(f):
+
+def make_colmap(cols):
+    colmap = {
+        'Grade Item': None,
+        'Points': None,
+        'Weight Achieved': None,
+        'Grade': None,
+        'Feedback': None
+    }
+
+    for i,col in enumerate(cols):
+        colmap[s(col)] = i
+
+    return lambda row, col: row[colmap[col]] if colmap[col] is not None else None
+
+def parse_grades(f):
     html = minerva_parser(f)
+<<<<<<< HEAD
     with open("output1.html", "w") as file:
         file.write(minervac_sanitize(html))
     rows = html.find('table', {'summary': 'List of grade items and their values'}).findAll('tr')
+=======
+    rows = html.find('table', {'summary': 'List of grade items and their values'}).find('tbody',recursive=False).findAll('tr',recursive=False)
+>>>>>>> 6e0b44a9b6b610e5e59a2075a449d9112457f01c
     gradebook = []
+    get = make_colmap(rows[0].findAll(['th']))
+
     for row in rows[1:]:
         struct = Grade()
         if row.has_attr('class') and 'd_ggl1' in row['class']:
             struct.category = True
         else: 
             struct.category = False
+<<<<<<< HEAD
         
         cols = row.findAll(['td','th'])
+=======
+
+        cols = row.findAll(['td','th'],recursive=False)
+>>>>>>> 6e0b44a9b6b610e5e59a2075a449d9112457f01c
         cols = unshift_indent(cols)
         
-        if s(cols[0]):
-            struct.title = s(cols[0])
-
-        if s(cols[1]): 
-            spans = cols[1].findAll('span')
+        if s(get(cols,'Grade Item')):
+            struct.title = s(get(cols,'Grade Item'))
+            struct.title = struct.title.replace('\n','')
+            struct.title = re.sub('  +',' ',struct.title)
+        if s(get(cols,'Points')): 
+            spans = get(cols,'Points').findAll('span')
 
             if spans:
                 actual_points = spans[0]
                 struct.notes = strip_all(spans[1:])
             else:
-                actual_points = cols[1]
+                actual_points = get(cols,'Points')
 
-            points = s(actual_points).split(' / ')
-
-            struct.points =  tuple(float(p) if p != '-' else None for p in points)
+            struct.points =  to_frac(actual_points)
 
 
+        if s(get(cols,'Weight Achieved')):
+            spans = get(cols,'Weight Achieved').findAll('span')
+
+<<<<<<< HEAD
         if s(cols[2]):
             struct.weight = tuple(float(n) if n != '-' else None for n in s(cols[2]).strip("%").split(' / '))
             print(s(cols[2]))
+=======
+            if spans:
+                actual_weight = spans[0]
+                struct.notes = strip_all(spans[1:])
+            else:
+                actual_weight = get(cols,'Weight Achieved')
+
+            struct.weight = to_frac(actual_weight)
+>>>>>>> 6e0b44a9b6b610e5e59a2075a449d9112457f01c
         
-        if s(cols[3]):
-            grade = s(cols[3]).rstrip('%').strip()
+        if s(get(cols,'Grade')):
+            grade = s(get(cols,'Grade')).rstrip('%').strip()
             if grade == '-':
                 grade = None
             elif grade.replace('.','',1).isdigit(): #This is a silly trick to deal with grades with a decimal point
@@ -127,14 +181,21 @@ def dump_grades(f):
             struct.grade = grade
 
 
-        if len(cols) >= 5 and s(cols[4]):
-            inner_div = cols[4].find('div', {'class': 'd2l-grades-individualcommentlabelcontainer'}).find('div')
-            if s(inner_div):
-                feedback = strip_all(inner_div.findAll('div', recursive = False))
-                struct.feedback = feedback[1]
+        if s(get(cols,'Feedback')):
+            feedback_individual = get(cols,'Feedback').find('div', {'class': 'd2l-grades-individualcommentlabelcontainer'})
+            if feedback_individual:
+                inner_div = feedback_individual.find('div')
+                if s(inner_div):
+                    feedback = strip_all(inner_div.findAll('div', recursive = False))
+                    struct.feedback = feedback[1]
+                # Could be a rubric otherwise, damn it
 
 
         gradebook.append(struct)
 
-    return gradebook
+    return formatters.FmtList(gradebook)
+
+def dump(shib_credentials,ou):
+    data = minerva_get("d2l/lms/grades/my_grades/main.d2l?ou=%s" % (ou), base_url=shib_credentials.lms_url)
+    return parse_grades(data.text)
 

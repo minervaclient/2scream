@@ -11,6 +11,7 @@ from builtins import input
 from builtins import range
 from builtins import object
 
+import collections
 import requests,sys
 import re
 import datetime
@@ -96,6 +97,8 @@ def normalize(input):
 def minerva_parser(text):
     return BeautifulSoup(text,parser)
     
+
+Frac = collections.namedtuple('Frac',['num','denom'])
 
 
 iso_date  = {

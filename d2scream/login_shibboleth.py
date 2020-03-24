@@ -3,10 +3,22 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+<<<<<<< HEAD
 from minerva_common import *
 from grades import *
 from content import *
 import shib_credentials
+=======
+from .minerva_common import *
+
+"""
+from .grades import *
+from .course_ids import *
+from .assign import *
+
+from . import shib_credentials
+"""
+>>>>>>> 6e0b44a9b6b610e5e59a2075a449d9112457f01c
 
 import sys
 import re
@@ -33,7 +45,7 @@ requests_log.setLevel(logging.DEBUG)
 requests_log.propagate = True
 
 
-def shibboleth_login():
+def login(shib_credentials):
     """ Ask myCourses for a shibboleth based login """
 
     # Request shibboleth redirect
@@ -77,7 +89,24 @@ def shibboleth_login():
     print(type(r7.text))
     
 
+
+"""
+def demo(): 
+    shibboleth_login()
+    # This is the gradebook
+    #print as_json(dump_grades(sys.argv[1]))
+    print "Enter a number to see your grades from that course..."
+
+    courses = dump_courses()
+    for counter,course in zip(range(1,len(courses) + 1),courses):
+        print "#%2d: %6s = %s" % (counter, course.ou, course.course)
+>>>>>>> 6e0b44a9b6b610e5e59a2075a449d9112457f01c
+
+    choice = courses[int(input("? ")) - 1]
     
+    print as_json(dump_grades(choice.ou))
+    print as_json(dump_assign(choice.ou)) 
+"""    
     
 
 
@@ -86,4 +115,3 @@ def shibboleth_dummy_post():
     return "shib_idp_ls_exception.shib_idp_session_ss=&shib_idp_ls_success.shib_idp_session_ss=false&shib_idp_ls_value.shib_idp_session_ss=&shib_idp_ls_exception.shib_idp_persistent_ss=&shib_idp_ls_success.shib_idp_persistent_ss=false&shib_idp_ls_value.shib_idp_persistent_ss=&shib_idp_ls_supported=&_eventId_proceed="
 
 
-shibboleth_login() 
