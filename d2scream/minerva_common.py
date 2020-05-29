@@ -76,7 +76,7 @@ def get_bldg_abbrev(location):
 
 def minervac_sanitize(text):
     """Encodes given text to ASCII"""
-    return text.encode('ascii','ignore')
+    return str(text.encode('ascii','ignore'))
 
 def set_loglevel(set_verbose):
     global verbose
