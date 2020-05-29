@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from .minerva_common import *
 from . import formatters
 from collections import namedtuple
-    
+
 import re
 import json
 
