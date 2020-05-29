@@ -30,7 +30,6 @@ def to_json(blob):
 
 def parse_courses(blob):
     html = to_json(blob)["Payload"]["Html"]
-    print(html)
     html = minerva_parser(html)
     rows = html.find('div',{'id': 'courseSelectorId'}).findAll('li')
     courses = []
