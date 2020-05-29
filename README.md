@@ -49,7 +49,7 @@ Eventually:
 	- [ ] Attached Files
 	- [ ] Re-downloading submissions
 	- [ ] Feedback
-- [ ] Content download
+- [X] Content download
 - [ ] Documentation
 - [ ] Course announcements
 - [ ] LRS authentication
